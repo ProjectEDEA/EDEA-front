@@ -1,26 +1,26 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Box } from '@mui/material';
+import { Header } from './components/layout/Header';
+import { EditorPage } from './pages/EditorPage';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <BrowserRouter>
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        <Header />
+        <Box component="main" sx={{ flexGrow: 1, overflow: 'auto' }}>
+          <Routes>
+            {/* とりあえずルートパスでEditorPageを表示 */}
+            <Route path="/" element={<EditorPage />} />
+            {/*
+              本来は以下のようにIDでページを分ける
+              <Route path="/edit/:diagramId" element={<EditorPage />} />
+            */}
+          </Routes>
+        </Box>
+      </Box>
+    </BrowserRouter>
+    );
 }
 
 export default App;
