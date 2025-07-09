@@ -49,6 +49,11 @@ export const ClassNode = ({ data }: ClassNodeProps) => {
               <ListItemText
                 key={attr.name}
                 primary={`${getVisibilitySymbol(attr.visibility)} ${attr.name}: ${attr.type}`}
+                sx={{
+                  '& .MuiListItemText-primary': {
+                    textDecoration: attr.is_static ? 'underline' : 'none',
+                  }
+                }}
               />
             ))}
           </List>

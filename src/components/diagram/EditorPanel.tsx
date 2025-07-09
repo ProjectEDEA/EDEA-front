@@ -1,43 +1,72 @@
-import { Box, Typography, TextField } from '@mui/material';
-import { useDiagramStore } from '../../store/diagramStore'; // Zustandストアをインポート
+import { useState } from 'react';
+import { Box, Typography, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { useDiagramStore } from '../../store/diagramStore';
+import { AttributeEditor } from './AttributeEditor'; // これから作成
 
 export const EditorPanel = () => {
-  // ★変更点: ストアから必要な情報を取得
-  const { diagram, selectedClassId, updateClassName } = useDiagramStore();
+    const { diagram, selectedClassId, updateClassName } = useDiagramStore();
+    const [view, setView] = useState<'attributes' | 'methods' | 'relations'>('attributes');
 
-  // 選択されたクラスのデータを検索
-  const selectedClass = diagram.classes.find(
-    (cls) => cls.id === selectedClassId
-  );
+    const selectedClass = diagram.classes.find(
+        (cls) => cls.id === selectedClassId
+    );
 
-  // クラス名が変更されたときのハンドラ
-  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (selectedClass) {
-      updateClassName(selectedClass.id, event.target.value);
-    }
-  };
+    const handleViewChange = (
+        event: React.MouseEvent<HTMLElement>,
+        newView: 'attributes' | 'methods' | 'relations' | null
+    ) => {
+        if (newView !== null) {
+            setView(newView);
+        }
+    };
 
-  return (
-    <Box sx={{ p: 2, border: '1px solid #ddd', height: '100%' }}>
-      <Typography variant="h5" gutterBottom>
-        クラスの編集
-      </Typography>
+    const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (selectedClass) {
+            updateClassName(selectedClass.id, event.target.value);
+        }
+    };
 
-      {selectedClass ? (
-        // ★変更点: 選択されたクラスの情報を表示し、編集可能にする
-        <>
-          <TextField
-            label="クラス名"
-            value={selectedClass.name}
-            onChange={handleNameChange} // onChangeイベントを追加
-            fullWidth
-            margin="normal"
-          />
-          {/* 今後、ここに属性やメソッドの編集UIを追加していく */}
-        </>
-      ) : (
-        <Typography>左のダイアグラムからクラスを選択してください</Typography>
-      )}
-    </Box>
-  );
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+                <Typography variant="h6" gutterBottom>
+                    クラスの編集
+                </Typography>
+
+                {selectedClass && (
+                    <>
+                        <TextField
+                            label="クラス名"
+                            value={selectedClass.name}
+                            onChange={handleNameChange}
+                            fullWidth
+                            margin="normal"
+                        />
+
+                        <ToggleButtonGroup
+                            value={view}
+                            exclusive
+                            onChange={handleViewChange}
+                            fullWidth
+                        >
+                            <ToggleButton value="attributes">変数</ToggleButton>
+                            <ToggleButton value="methods">関数</ToggleButton>
+                            <ToggleButton value="relations">関係</ToggleButton>
+                        </ToggleButtonGroup>
+                    </>
+                )}
+            </Box>
+
+            <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
+                {!selectedClass ? (
+                    <Typography>左のダイアグラムからクラスを選択してください</Typography>
+                ) : (
+                    <>
+                        {view === 'attributes' && <AttributeEditor selectedClass={selectedClass} />}
+                        {/* TODO: view === 'methods' や 'relations' の場合のコンポーネントも後で追加 */}
+                    </>
+                )}
+            </Box>
+        </Box>
+    );
 };
