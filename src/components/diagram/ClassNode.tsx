@@ -23,6 +23,14 @@ const getVisibilitySymbol = (visibility?: Visibility): string => {
   }
 };
 
+// 引数リストを文字列に変換するヘルパー関数
+const formatParameters = (parameters: any[]): string => {
+  if (!parameters || parameters.length === 0) {
+    return '';
+  }
+  return parameters.map(param => `${param.name}: ${param.type}`).join(', ');
+};
+
 // ノードの型定義 (props.dataでClassDataを受け取る)
 interface ClassNodeProps {
   data: ClassData;
@@ -63,7 +71,13 @@ export const ClassNode = ({ data }: ClassNodeProps) => {
             {data.methods.map((method) => (
               <ListItemText
                 key={method.name}
-                primary={`${getVisibilitySymbol(method.visibility)} ${method.name}() : ${method.return_type}`}
+                primary={`${getVisibilitySymbol(method.visibility)} ${method.name}(${formatParameters(method.parameters)}): ${method.return_type}`}
+                sx={{
+                  '& .MuiListItemText-primary': {
+                    textDecoration: method.is_static ? 'underline' : 'none',
+                    fontStyle: method.is_abstract ? 'italic' : 'normal',
+                  }
+                }}
               />
             ))}
           </List>

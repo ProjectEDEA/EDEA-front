@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Box, Typography, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useDiagramStore } from '../../store/diagramStore';
 import { AttributeEditor } from './AttributeEditor'; // これから作成
+import { MethodEditor } from './MethodEditor';
 
 export const EditorPanel = () => {
     const { diagram, selectedClassId, updateClassName } = useDiagramStore();
@@ -64,6 +65,7 @@ export const EditorPanel = () => {
                     <>
                         {view === 'attributes' && <AttributeEditor selectedClass={selectedClass} />}
                         {/* TODO: view === 'methods' や 'relations' の場合のコンポーネントも後で追加 */}
+                        {view === 'methods' && <MethodEditor selectedClass={selectedClass} />}
                     </>
                 )}
             </Box>

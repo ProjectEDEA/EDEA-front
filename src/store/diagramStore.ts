@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { DiagramData, ClassData, Variable } from "../types/uml";
+import type { DiagramData, ClassData, Variable, Method } from "../types/uml";
 import { mockDiagram } from "../mocks/diagramData";
 
 // ストアが保持する状態の型定義
@@ -20,6 +20,25 @@ interface DiagramActions {
     updatedAttribute: Partial<Variable>
   ) => void;
   deleteAttribute: (classId: string, attrIndex: number) => void;
+  addMethod: (classId: string) => void;
+  updateMethod: (
+    classId: string,
+    methodIndex: number,
+    updatedMethod: Partial<Method>
+  ) => void;
+  deleteMethod: (classId: string, methodIndex: number) => void;
+  addParameter: (classId: string, methodIndex: number) => void;
+  updateParameter: (
+    classId: string,
+    methodIndex: number,
+    paramIndex: number,
+    updatedParam: Partial<Variable>
+  ) => void;
+  deleteParameter: (
+    classId: string,
+    methodIndex: number,
+    paramIndex: number
+  ) => void;
 }
 
 // ストアの作成
@@ -92,6 +111,104 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
               (_, index) => index !== attrIndex
             );
             return { ...cls, attributes: newAttributes };
+          }
+          return cls;
+        }),
+      },
+    })),
+
+    addMethod: (classId) =>
+    set((state) => ({
+      diagram: {
+        ...state.diagram,
+        classes: state.diagram.classes.map((cls) => {
+          if (cls.id === classId) {
+            const newMethod: Method = {
+              name: 'newMethod',
+              return_type: 'void',
+              visibility: 'PUBLIC',
+              parameters: [],
+            };
+            return { ...cls, methods: [...cls.methods, newMethod] };
+          }
+          return cls;
+        }),
+      },
+    })),
+
+  updateMethod: (classId, methodIndex, updatedMethod) =>
+    set((state) => ({
+      diagram: {
+        ...state.diagram,
+        classes: state.diagram.classes.map((cls) => {
+          if (cls.id === classId) {
+            const newMethods = [...cls.methods];
+            newMethods[methodIndex] = { ...newMethods[methodIndex], ...updatedMethod };
+            return { ...cls, methods: newMethods };
+          }
+          return cls;
+        }),
+      },
+    })),
+
+  deleteMethod: (classId, methodIndex) =>
+    set((state) => ({
+      diagram: {
+        ...state.diagram,
+        classes: state.diagram.classes.map((cls) => {
+          if (cls.id === classId) {
+            return { ...cls, methods: cls.methods.filter((_, i) => i !== methodIndex) };
+          }
+          return cls;
+        }),
+      },
+    })),
+  
+  addParameter: (classId, methodIndex) =>
+    set((state) => ({
+      diagram: {
+        ...state.diagram,
+        classes: state.diagram.classes.map((cls) => {
+          if (cls.id === classId) {
+            const newMethods = [...cls.methods];
+            const targetMethod = newMethods[methodIndex];
+            const newParam: Variable = { name: 'newParam', type: 'String' };
+            targetMethod.parameters = [...targetMethod.parameters, newParam];
+            return { ...cls, methods: newMethods };
+          }
+          return cls;
+        }),
+      },
+    })),
+  
+  updateParameter: (classId, methodIndex, paramIndex, updatedParam) =>
+    set((state) => ({
+      diagram: {
+        ...state.diagram,
+        classes: state.diagram.classes.map((cls) => {
+          if (cls.id === classId) {
+            const newMethods = [...cls.methods];
+            const targetMethod = newMethods[methodIndex];
+            const newParams = [...targetMethod.parameters];
+            newParams[paramIndex] = { ...newParams[paramIndex], ...updatedParam };
+            targetMethod.parameters = newParams;
+            return { ...cls, methods: newMethods };
+          }
+          return cls;
+        }),
+      },
+    })),
+
+  deleteParameter: (classId, methodIndex, paramIndex) =>
+    set((state) => ({
+      diagram: {
+        ...state.diagram,
+        classes: state.diagram.classes.map((cls) => {
+          if (cls.id === classId) {
+            const newMethods = [...cls.methods];
+            const targetMethod = newMethods[methodIndex];
+            targetMethod.parameters = targetMethod.parameters.filter((_, i) => i !== paramIndex);
+            return { ...cls, methods: newMethods };
           }
           return cls;
         }),
