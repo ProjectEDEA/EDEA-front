@@ -1,6 +1,14 @@
 import { create } from "zustand";
-import type { DiagramData, ClassData, Variable, Method } from "../types/uml";
+import type {
+  DiagramData,
+  ClassData,
+  Variable,
+  Method,
+  RelationInfo,
+  RelationType,
+} from "../types/uml";
 import { mockDiagram } from "../mocks/diagramData";
+import { getInverseRelation } from "../utils/diagramUtils";
 
 // ストアが保持する状態の型定義
 interface DiagramState {
@@ -39,6 +47,13 @@ interface DiagramActions {
     methodIndex: number,
     paramIndex: number
   ) => void;
+  addRelation: (classId: string, relation: RelationInfo) => void;
+  updateRelation: (
+    classId: string,
+    index: number,
+    update: RelationInfo
+  ) => void;
+  deleteRelation: (classId: string, index: number) => void;
 }
 
 // ストアの作成
@@ -117,16 +132,16 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
       },
     })),
 
-    addMethod: (classId) =>
+  addMethod: (classId) =>
     set((state) => ({
       diagram: {
         ...state.diagram,
         classes: state.diagram.classes.map((cls) => {
           if (cls.id === classId) {
             const newMethod: Method = {
-              name: 'newMethod',
-              return_type: 'void',
-              visibility: 'PUBLIC',
+              name: "newMethod",
+              return_type: "void",
+              visibility: "PUBLIC",
               parameters: [],
             };
             return { ...cls, methods: [...cls.methods, newMethod] };
@@ -143,7 +158,10 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
         classes: state.diagram.classes.map((cls) => {
           if (cls.id === classId) {
             const newMethods = [...cls.methods];
-            newMethods[methodIndex] = { ...newMethods[methodIndex], ...updatedMethod };
+            newMethods[methodIndex] = {
+              ...newMethods[methodIndex],
+              ...updatedMethod,
+            };
             return { ...cls, methods: newMethods };
           }
           return cls;
@@ -157,13 +175,16 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
         ...state.diagram,
         classes: state.diagram.classes.map((cls) => {
           if (cls.id === classId) {
-            return { ...cls, methods: cls.methods.filter((_, i) => i !== methodIndex) };
+            return {
+              ...cls,
+              methods: cls.methods.filter((_, i) => i !== methodIndex),
+            };
           }
           return cls;
         }),
       },
     })),
-  
+
   addParameter: (classId, methodIndex) =>
     set((state) => ({
       diagram: {
@@ -172,7 +193,7 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
           if (cls.id === classId) {
             const newMethods = [...cls.methods];
             const targetMethod = newMethods[methodIndex];
-            const newParam: Variable = { name: 'newParam', type: 'String' };
+            const newParam: Variable = { name: "newParam", type: "String" };
             targetMethod.parameters = [...targetMethod.parameters, newParam];
             return { ...cls, methods: newMethods };
           }
@@ -180,7 +201,7 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
         }),
       },
     })),
-  
+
   updateParameter: (classId, methodIndex, paramIndex, updatedParam) =>
     set((state) => ({
       diagram: {
@@ -190,7 +211,10 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
             const newMethods = [...cls.methods];
             const targetMethod = newMethods[methodIndex];
             const newParams = [...targetMethod.parameters];
-            newParams[paramIndex] = { ...newParams[paramIndex], ...updatedParam };
+            newParams[paramIndex] = {
+              ...newParams[paramIndex],
+              ...updatedParam,
+            };
             targetMethod.parameters = newParams;
             return { ...cls, methods: newMethods };
           }
@@ -207,11 +231,109 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
           if (cls.id === classId) {
             const newMethods = [...cls.methods];
             const targetMethod = newMethods[methodIndex];
-            targetMethod.parameters = targetMethod.parameters.filter((_, i) => i !== paramIndex);
+            targetMethod.parameters = targetMethod.parameters.filter(
+              (_, i) => i !== paramIndex
+            );
             return { ...cls, methods: newMethods };
           }
           return cls;
         }),
       },
     })),
+
+  // 関係の追加
+  addRelation: (classId, relation) =>
+    set((state) => {
+      const newDiagram = { ...state.diagram };
+      const classIndex = newDiagram.classes.findIndex(
+        (cls) => cls.id === classId
+      );
+
+      if (classIndex >= 0) {
+        if (!newDiagram.classes[classIndex].relations) {
+          newDiagram.classes[classIndex].relations = [];
+        }
+        newDiagram.classes[classIndex].relations!.push(relation);
+      }
+
+      return { diagram: newDiagram };
+    }),
+
+  // 関係の更新
+  updateRelation: (classId, index, update) =>
+    set((state) => {
+      const newDiagram = { ...state.diagram };
+      const classIndex = newDiagram.classes.findIndex(
+        (cls) => cls.id === classId
+      );
+
+      if (classIndex >= 0 && newDiagram.classes[classIndex].relations) {
+        newDiagram.classes[classIndex].relations![index] = {
+          ...newDiagram.classes[classIndex].relations![index],
+          ...update,
+        };
+      }
+
+      return { diagram: newDiagram };
+    }),
+
+  // 関係の削除
+  deleteRelation: (classId, index) =>
+    set((state) => {
+      const newDiagram = { ...state.diagram };
+      const classIndex = newDiagram.classes.findIndex(
+        (cls) => cls.id === classId
+      );
+
+      if (classIndex >= 0 && newDiagram.classes[classIndex].relations) {
+        newDiagram.classes[classIndex].relations!.splice(index, 1);
+      }
+
+      return { diagram: newDiagram };
+    }),
+
+  // 双方向関係を追加するメソッド
+  addBidirectionalRelation: (
+    sourceClassId: string,
+    targetClassId: string,
+    relation: RelationType
+  ) =>
+    set((state) => {
+      const newDiagram = { ...state.diagram };
+      const sourceIndex = newDiagram.classes.findIndex(
+        (cls) => cls.id === sourceClassId
+      );
+
+      // ソースクラスに関係を追加
+      if (sourceIndex >= 0) {
+        if (!newDiagram.classes[sourceIndex].relations) {
+          newDiagram.classes[sourceIndex].relations = [];
+        }
+
+        newDiagram.classes[sourceIndex].relations!.push({
+          target_class_id: targetClassId,
+          relation: relation,
+        });
+      }
+
+      // 対象クラスに逆方向の関係を追加（必要な場合）
+      const inverseRelation = getInverseRelation(relation);
+      if (inverseRelation) {
+        const targetIndex = newDiagram.classes.findIndex(
+          (cls) => cls.id === targetClassId
+        );
+        if (targetIndex >= 0) {
+          if (!newDiagram.classes[targetIndex].relations) {
+            newDiagram.classes[targetIndex].relations = [];
+          }
+
+          newDiagram.classes[targetIndex].relations!.push({
+            target_class_id: sourceClassId,
+            relation: inverseRelation,
+          });
+        }
+      }
+
+      return { diagram: newDiagram };
+    }),
 }));
