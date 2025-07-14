@@ -1,4 +1,4 @@
-import { Box, Fab, List } from '@mui/material';
+import { Box, Button, Fab, List } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useDiagramStore } from '../../store/diagramStore';
 import type { ClassData } from '../../types/uml';
@@ -26,14 +26,23 @@ export const AttributeEditor = ({ selectedClass }: AttributeEditorProps) => {
             index={index}
           />
         ))}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            mt: 2
+          }}
+        >
+          <Button
+            variant="contained"
+            size="small"
+            onClick={handleAddAttribute}
+            startIcon={<AddIcon />}
+          >
+            属性を追加
+          </Button>
+        </Box>
       </List>
-      <Fab
-        color="primary"
-        sx={{ position: 'absolute', bottom: 16, right: 16 }}
-        onClick={handleAddAttribute}
-      >
-        <AddIcon />
-      </Fab>
     </Box>
   );
 };
