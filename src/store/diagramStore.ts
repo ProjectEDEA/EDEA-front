@@ -19,6 +19,7 @@ interface DiagramState {
 // ストアが提供するアクション（操作）の型定義
 interface DiagramActions {
   selectClass: (classId: string | null) => void;
+  addClass: (newClass: ClassData) => void;
   updateClassName: (classId: string, newName: string) => void;
   // TODO: 今後ここに属性やメソッドを追加/編集するアクションを追加していく
   addAttribute: (classId: string) => void;
@@ -64,6 +65,15 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
 
   // アクションの実装
   selectClass: (classId) => set({ selectedClassId: classId }),
+
+  addClass: (newClass: ClassData) => set((state) => {
+  const newDiagram = {
+    ...state.diagram,
+    classes: [...state.diagram.classes, newClass]
+  };
+  
+  return { diagram: newDiagram };
+}),
 
   updateClassName: (classId, newName) =>
     set((state) => ({

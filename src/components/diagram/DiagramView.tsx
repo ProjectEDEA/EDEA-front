@@ -1,11 +1,12 @@
-// 変更点: useMemo, mockDiagramを削除し、Zustandのフックをインポート
-import { useCallback } from 'react'; // useCallbackをインポート
+import { useCallback } from 'react';
 import ReactFlow, { Background, Controls, Node } from 'reactflow';
+import { Fab } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import 'reactflow/dist/style.css';
-import { useDiagramStore } from '../../store/diagramStore'; // Zustandストアをインポート
+import { useDiagramStore } from '../../store/diagramStore';
 import { ClassNode } from './ClassNode';
 import type { ClassData, RelationType } from '../../types/uml';
-import { getEdgeLabel, getMarkerEndForRelation, getRelationTypeLabel } from '../../utils/diagramUtils';
+import { getEdgeLabel, getMarkerEndForRelation } from '../../utils/diagramUtils';
 import { DiamondMarker } from './DiamondMarker';
 
 const nodeTypes = {
@@ -31,10 +32,8 @@ const getEdgeStyleForRelation = (relationType: RelationType) => {
 };
 
 export const DiagramView = () => {
-  // ストアから状態とアクションを取得
-  const { diagram, selectClass } = useDiagramStore();
+  const { diagram, selectClass, addClass } = useDiagramStore();
 
-  // ★変更点: ストアのデータからnodesとedgesを生成
   const nodes = diagram.classes.map((classData) => ({
     id: classData.id,
     type: 'classNode',
@@ -43,7 +42,6 @@ export const DiagramView = () => {
     draggable: true,
   }));
 
-  // エッジの生成
   const edges = diagram.classes.flatMap(
     (classData) =>
       classData.relations?.map((rel) => ({
@@ -58,24 +56,73 @@ export const DiagramView = () => {
       })) ?? []
   );
 
-  // ★追加点: ノードクリック時の処理
   const handleNodeClick = useCallback((event: React.MouseEvent, node: Node<ClassData>) => {
     selectClass(node.id);
   }, [selectClass]);
 
+  const handleAddClass = useCallback(() => {
+    // 新しいクラスのIDを生成
+    const newClassId = `class_${Date.now()}`;
+    
+    // 新しいクラスの位置を計算（他のクラスと重ならないように）
+    const existingPositions = diagram.classes.map(cls => cls.position);
+    let newPosition = { x: 100, y: 100 };
+    
+    // 既存のクラスと重ならない位置を見つける
+    while (existingPositions.some(pos => 
+      Math.abs(pos.x - newPosition.x) < 200 && Math.abs(pos.y - newPosition.y) < 150
+    )) {
+      newPosition.x += 220;
+      if (newPosition.x > 800) {
+        newPosition.x = 100;
+        newPosition.y += 170;
+      }
+    }
+
+    // 新しいクラスを追加
+    const newClass: ClassData = {
+      id: newClassId,
+      name: '新しいクラス',
+      attributes: [],
+      methods: [],
+      relations: [],
+      position: newPosition
+    };
+
+    addClass(newClass);
+    
+    // 新しく作成したクラスを選択状態にする
+    selectClass(newClassId);
+  }, [diagram.classes, addClass, selectClass]);
+
   return (
     <div style={{ height: '100%', border: '1px solid #ddd', position: 'relative' }}>
-      <DiamondMarker /> {/* ひし形マーカーを追加 */}
+      <DiamondMarker />
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
-        onNodeClick={handleNodeClick} // クリックイベントを登録
+        onNodeClick={handleNodeClick}
         fitView
       >
         <Background />
         <Controls />
       </ReactFlow>
+      
+      {/* 新規クラス追加ボタン */}
+      <Fab
+        color="primary"
+        aria-label="add class"
+        onClick={handleAddClass}
+        sx={{
+          position: 'absolute',
+          bottom: 16,
+          right: 16,
+          zIndex: 1000
+        }}
+      >
+        <AddIcon />
+      </Fab>
     </div>
   );
 };
