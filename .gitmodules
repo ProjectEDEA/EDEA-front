@@ -1,0 +1,6 @@
+[submodule "proto"]
+	path = proto
+	url = https://github.com/ProjectEDEA/proto.git
+[submodule "src/proto"]
+	path = src/proto
+	url = https://github.com/ProjectEDEA/proto.git
