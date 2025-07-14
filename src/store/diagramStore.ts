@@ -21,6 +21,7 @@ interface DiagramState {
 interface DiagramActions {
   selectClass: (classId: string | null) => void;
   addClass: (newClass: ClassData) => void;
+  deleteClass: (classId: string) => void;
   applyAutoLayout: () => void;
   updateClassName: (classId: string, newName: string) => void;
   updateAllClassPositions: (classes: ClassData[]) => void;
@@ -77,6 +78,34 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
       };
 
       return { diagram: newDiagram };
+    }),
+
+  deleteClass: (classId: string) =>
+    set((state) => {
+      const newDiagram = { ...state.diagram };
+
+      // 1. 削除対象のクラスをフィルタリング
+      newDiagram.classes = newDiagram.classes.filter(
+        (cls) => cls.id !== classId
+      );
+
+      // 2. 他のクラスから削除対象クラスへの関係を削除
+      newDiagram.classes.forEach((cls) => {
+        if (cls.relations) {
+          cls.relations = cls.relations.filter(
+            (rel) => rel.target_class_id !== classId
+          );
+        }
+      });
+
+      // 3. 削除したクラスが選択されていた場合、選択状態をクリア
+      const newSelectedClassId =
+        state.selectedClassId === classId ? null : state.selectedClassId;
+
+      return {
+        diagram: newDiagram,
+        selectedClassId: newSelectedClassId,
+      };
     }),
 
   applyAutoLayout: () =>
