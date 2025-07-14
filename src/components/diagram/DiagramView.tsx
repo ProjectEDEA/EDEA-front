@@ -8,7 +8,7 @@ import 'reactflow/dist/style.css';
 import { useDiagramStore } from '../../store/diagramStore';
 import { ClassNode } from './ClassNode';
 import type { ClassData, RelationType } from '../../types/uml';
-import { getEdgeLabel, getMarkerEndForRelation } from '../../utils/diagramUtils';
+import { getEdgeLabel, getMarkerEndForRelation, getMarkerStartForRelation } from '../../utils/diagramUtils';
 import { DiamondMarker } from './DiamondMarker';
 import { calculateLayout, calculateHierarchicalLayout, calculateCustomHierarchicalLayout } from '../../utils/layout';
 
@@ -20,13 +20,13 @@ const nodeTypes = {
 const getEdgeStyleForRelation = (relationType: RelationType) => {
   switch (relationType) {
     case 'INHERITANCE':
-      return { stroke: '#333', strokeWidth: 2 };
+      return { stroke: '#000', strokeWidth: 2.5 };
     case 'IMPLEMENTATION':
-      return { stroke: '#333', strokeWidth: 1.5, strokeDasharray: '5,5' };
+      return { stroke: '#000', strokeWidth: 2.5, strokeDasharray: '8' };
     case 'ASSOCIATION':
-      return { stroke: '#666', strokeWidth: 1 };
+      return { stroke: '#000', strokeWidth: 2.5 };
     case 'AGGREGATION':
-      return { stroke: '#888', strokeWidth: 2 };
+      return { stroke: '#000', strokeWidth: 2.5 };
     case 'COMPOSITION':
       return { stroke: '#000', strokeWidth: 2.5 };
     default:
@@ -56,6 +56,7 @@ export const DiagramView = () => {
         label: getEdgeLabel(rel),
         style: getEdgeStyleForRelation(rel.relation),
         markerEnd: getMarkerEndForRelation(rel.relation),
+        markerStart: getMarkerStartForRelation(rel.relation),
         data: rel
       })) ?? []
   );

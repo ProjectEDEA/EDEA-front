@@ -23,24 +23,31 @@ export const getMarkerEndForRelation = (relationType: RelationType) => {
     case 'INHERITANCE':
       return {
         type: MarkerType.ArrowClosed,
-        width: 12,
-        height: 12,
-        color: '#333',
+        width: 24,
+        height: 24,
+        color: '#000',
       };
     case 'IMPLEMENTATION':
       return {
         type: MarkerType.ArrowClosed,
-        width: 12,
-        height: 12,
-        color: '#333',
+        width: 24,
+        height: 24,
+        color: '#000',
       };
     case 'ASSOCIATION':
       return {
         type: MarkerType.Arrow,
-        width: 8,
-        height: 8,
-        color: '#666',
+        width: 24,
+        height: 24,
+        color: '#000',
       };
+    default:
+      return undefined;
+  }
+};
+
+export const getMarkerStartForRelation = (relationType: RelationType) => {
+  switch (relationType) {
     case 'AGGREGATION':
         return 'diamond';
     case 'COMPOSITION':
