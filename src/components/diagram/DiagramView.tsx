@@ -1,13 +1,16 @@
-import { useCallback } from 'react';
-import ReactFlow, { Background, Controls, Node } from 'reactflow';
-import { Fab } from '@mui/material';
+import { useCallback, useRef } from 'react';
+import ReactFlow, { Background, Controls, Node, ReactFlowInstance } from 'reactflow';
+import { Fab, SpeedDial, SpeedDialAction } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import 'reactflow/dist/style.css';
 import { useDiagramStore } from '../../store/diagramStore';
 import { ClassNode } from './ClassNode';
 import type { ClassData, RelationType } from '../../types/uml';
 import { getEdgeLabel, getMarkerEndForRelation } from '../../utils/diagramUtils';
 import { DiamondMarker } from './DiamondMarker';
+import { calculateLayout, calculateHierarchicalLayout, calculateCustomHierarchicalLayout } from '../../utils/layout';
 
 const nodeTypes = {
   classNode: ClassNode,
@@ -32,7 +35,8 @@ const getEdgeStyleForRelation = (relationType: RelationType) => {
 };
 
 export const DiagramView = () => {
-  const { diagram, selectClass, addClass } = useDiagramStore();
+  const { diagram, selectClass, addClass, applyAutoLayout, updateAllClassPositions } = useDiagramStore();
+  const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
 
   const nodes = diagram.classes.map((classData) => ({
     id: classData.id,
@@ -61,39 +65,46 @@ export const DiagramView = () => {
   }, [selectClass]);
 
   const handleAddClass = useCallback(() => {
-    // 新しいクラスのIDを生成
     const newClassId = `class_${Date.now()}`;
-    
-    // 新しいクラスの位置を計算（他のクラスと重ならないように）
-    const existingPositions = diagram.classes.map(cls => cls.position);
-    let newPosition = { x: 100, y: 100 };
-    
-    // 既存のクラスと重ならない位置を見つける
-    while (existingPositions.some(pos => 
-      Math.abs(pos.x - newPosition.x) < 200 && Math.abs(pos.y - newPosition.y) < 150
-    )) {
-      newPosition.x += 220;
-      if (newPosition.x > 800) {
-        newPosition.x = 100;
-        newPosition.y += 170;
-      }
-    }
-
-    // 新しいクラスを追加
     const newClass: ClassData = {
       id: newClassId,
       name: '新しいクラス',
       attributes: [],
       methods: [],
       relations: [],
-      position: newPosition
+      position: { x: 50, y: 50 } // とりあえず左上に配置
     };
-
     addClass(newClass);
-    
-    // 新しく作成したクラスを選択状態にする
     selectClass(newClassId);
-  }, [diagram.classes, addClass, selectClass]);
+  }, [addClass, selectClass]);
+
+  const applyCustomHierarchicalLayout = useCallback(() => {
+    const newPositions = calculateCustomHierarchicalLayout(diagram.classes);
+    
+    const updatedClasses = diagram.classes.map(cls => ({
+      ...cls,
+      position: newPositions.get(cls.id) || cls.position
+    }));
+    
+    updateAllClassPositions(updatedClasses);
+    
+    // レイアウト更新後に少し遅延してfitViewを実行
+    setTimeout(() => {
+      if (reactFlowInstance.current) {
+        reactFlowInstance.current.fitView({
+          padding: 0.1, // 10%のパディングを追加
+          minZoom: 0.1, // 最小ズーム
+          maxZoom: 1.5, // 最大ズーム
+          duration: 800 // アニメーション時間（ミリ秒）
+        });
+      }
+    }, 100);
+  }, [diagram.classes, updateAllClassPositions]);
+
+  // ReactFlowインスタンスを取得
+  const onInit = useCallback((instance: ReactFlowInstance) => {
+    reactFlowInstance.current = instance;
+  }, []);
 
   return (
     <div style={{ height: '100%', border: '1px solid #ddd', position: 'relative' }}>
@@ -103,12 +114,28 @@ export const DiagramView = () => {
         edges={edges}
         nodeTypes={nodeTypes}
         onNodeClick={handleNodeClick}
+        onInit={onInit} // ReactFlowインスタンスを取得
         fitView
+        fitViewOptions={{
+          padding: 0.1,
+          minZoom: 0.1,
+          maxZoom: 1.5
+        }}
       >
         <Background />
         <Controls />
       </ReactFlow>
-      
+
+      {/* ★ 自動レイアウト実行ボタン */}
+      <Fab
+        color="secondary"
+        aria-label="auto layout"
+        onClick={applyCustomHierarchicalLayout}
+        sx={{ position: 'absolute', bottom: 16, right: 88, zIndex: 1000 }}
+      >
+        <AutoFixHighIcon />
+      </Fab>
+
       {/* 新規クラス追加ボタン */}
       <Fab
         color="primary"
