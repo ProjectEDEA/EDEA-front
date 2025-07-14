@@ -1,4 +1,4 @@
-import { Box, Fab, List } from '@mui/material';
+import { Box, Button, Fab, List } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useDiagramStore } from '../../store/diagramStore';
 import type { ClassData } from '../../types/uml';
@@ -17,10 +17,23 @@ export const MethodEditor = ({ selectedClass }: MethodEditorProps) => {
                 {selectedClass.methods.map((method, index) => (
                     <MethodRow key={index} classId={selectedClass.id} method={method} methodIndex={index} />
                 ))}
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        mt: 2
+                    }}
+                >
+                    <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => addMethod(selectedClass.id)}
+                        startIcon={<AddIcon />}
+                    >
+                        関数を追加
+                    </Button>
+                </Box>
             </List>
-            <Fab color="primary" sx={{ position: 'absolute', bottom: 16, right: 16 }} onClick={() => addMethod(selectedClass.id)}>
-                <AddIcon />
-            </Fab>
         </Box>
     );
 };
