@@ -60,6 +60,7 @@ export interface ClassData {
 // 複数のクラスと、それらを結ぶ関連情報で構成されます
 export interface DiagramData {
   id: string; // ダイアグラムの一意なID
+  name: string; // ダイアグラムの名前
   classes: ClassData[];
   // Note: 関係(線)の情報は各クラスが持つか、ここで一元管理するか設計次第です。
   // 今回はスキーマに合わせて各クラスが持つ形にしています。

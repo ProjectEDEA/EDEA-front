@@ -7,9 +7,48 @@ import type {
   RelationInfo,
   RelationType,
 } from "../types/uml";
-import { mockDiagram } from "../mocks/diagramData";
+import { mockDiagram, mockServerResponseJSON } from "../mocks/diagramData";
 import { getInverseRelation } from "../utils/diagramUtils";
 import { calculateLayout } from "../utils/layout";
+import { convertSourceToTarget } from "../api/convertData";
+
+/**
+ * プロジェクト名と現在日時からハッシュ化されたIDを生成
+ */
+export const generateProjectId = (projectName: string): string => {
+  const timestamp = new Date().toISOString();
+  const source = `${projectName}_${timestamp}`;
+  
+  // シンプルなハッシュ関数（実際のプロダクションではより強力なライブラリを使用）
+  let hash = 0;
+  for (let i = 0; i < source.length; i++) {
+    const char = source.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // 32bit整数に変換
+  }
+  
+  // 負の値を正の値に変換し、16進数の文字列として返す
+  const hashString = Math.abs(hash).toString(16);
+  
+  // プレフィックスを付けて識別しやすくする
+  return `proj_${hashString}_${Date.now().toString(36)}`;
+};
+
+/**
+ * 新しい空のダイアグラムデータを作成
+ */
+export const createNewDiagram = (projectName: string, projectId?: string): DiagramData => {
+  const id = projectId || generateProjectId(projectName);
+  const now = Math.floor(Date.now() / 1000);
+  
+  return {
+    id: id,
+    name: projectName,
+    classes: [],
+    // createdAt: now,
+    // lastModified: now,
+  };
+};
 
 // ストアが保持する状態の型定義
 interface DiagramState {
@@ -19,6 +58,8 @@ interface DiagramState {
 
 // ストアが提供するアクション（操作）の型定義
 interface DiagramActions {
+  setDiagram: (diagram: DiagramData) => void;
+  updateDiagramName: (name: string) => void;
   selectClass: (classId: string | null) => void;
   addClass: (newClass: ClassData) => void;
   deleteClass: (classId: string) => void;
@@ -64,8 +105,25 @@ interface DiagramActions {
 // ストアの作成
 export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
   // 初期状態
-  diagram: mockDiagram, // まずはモックデータを初期値とする
+  // diagram: mockDiagram, // まずはモックデータを初期値とする
+  diagram: convertSourceToTarget(mockServerResponseJSON), // APIからのデータ変換を行う
   selectedClassId: null,
+
+  // 新しく追加：ダイアグラム全体をセット
+  setDiagram: (diagram: DiagramData) =>
+    set(() => ({
+      diagram: diagram,
+      selectedClassId: null, // 新しいダイアグラムロード時は選択をクリア
+    })),
+
+  // ダイアグラム名の更新
+  updateDiagramName: (name: string) =>
+  set((state) => ({
+    diagram: {
+      ...state.diagram,
+      name: name,
+    },
+  })),
 
   // アクションの実装
   selectClass: (classId) => set({ selectedClassId: classId }),
