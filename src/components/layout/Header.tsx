@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   AppBar,
@@ -9,6 +10,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  DialogActions,
   IconButton,
   InputAdornment,
   Divider
@@ -17,14 +19,22 @@ import PolylineIcon from '@mui/icons-material/Polyline';
 import SaveIcon from '@mui/icons-material/Save';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import WarningIcon from '@mui/icons-material/Warning';
 import { useDiagramStore } from '../../store/diagramStore';
 import { convertTargetToSource } from '../../api/convertData';
 import axios from 'axios';
+import { useSnackbar } from 'notistack';
 
 export const Header = () => {
+  const navigate = useNavigate();
   const { diagram, updateDiagramName } = useDiagramStore();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
 
   const handleNameChange = (value: string) => {
     updateDiagramName(value);
@@ -33,17 +43,37 @@ export const Header = () => {
   // 保存ボタン
   const handleSaveClick = async () => {
     try {
+      setSaving(true);
       const convertedData = convertTargetToSource(diagram);
       const baseURL = "http://localhost:3000";
-      await axios.post(baseURL + "/api_p1", convertedData)
-        .then(response => {
-          console.log('ダイアグラム保存:', response.data);
-        })
-        .catch(error => {
-          console.error('ダイアグラム保存エラー:', error);
-        });
+
+      await axios.post(baseURL + "/api_p1", convertedData);
+      console.log('ダイアグラム保存成功');
+
+      // 保存成功のトースト表示
+      enqueueSnackbar('ダイアグラムを保存しました', {
+        variant: 'success',
+        autoHideDuration: 2000,
+        anchorOrigin: {
+          vertical: 'bottom',
+          horizontal: 'right',
+        },
+      });
+
     } catch (error) {
-      console.error('ダイアグラムの保存に失敗:', error);
+      console.error('ダイアグラム保存エラー:', error);
+
+      // 保存失敗のトースト表示
+      enqueueSnackbar('保存に失敗しました', {
+        variant: 'error',
+        autoHideDuration: 4000,
+        anchorOrigin: {
+          vertical: 'bottom',
+          horizontal: 'right',
+        },
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -57,14 +87,91 @@ export const Header = () => {
     setShareDialogOpen(false);
   };
 
+  // 削除ダイアログを開く
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  // 削除ダイアログを閉じる
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+  };
+
+  // ダイアグラムを削除
+  const handleDeleteDiagram = async () => {
+    try {
+      setDeleting(true);
+      const baseURL = "http://localhost:3000";
+
+      await axios.delete(`${baseURL}/api_p1/${diagram.id}`);
+      console.log('ダイアグラム削除成功');
+
+      // 削除成功のトースト表示
+      enqueueSnackbar(`「${diagram.name}」を削除しました`, {
+        variant: 'success',
+        autoHideDuration: 2000,
+        anchorOrigin: {
+          vertical: 'bottom',
+          horizontal: 'right',
+        },
+      });
+
+      // ダイアログを閉じる
+      setDeleteDialogOpen(false);
+
+      // 少し遅延してからTopPageに遷移（トーストを見せるため）
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 1000);
+
+    } catch (error) {
+      console.error('ダイアグラム削除エラー:', error);
+
+      // 削除失敗のトースト表示
+      enqueueSnackbar('削除に失敗しました', {
+        variant: 'error',
+        autoHideDuration: 4000,
+        anchorOrigin: {
+          vertical: 'bottom',
+          horizontal: 'right',
+        },
+      });
+
+      // エラーが発生してもダイアログを閉じる
+      setDeleteDialogOpen(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   // リンクをクリップボードにコピー
   const handleCopyLink = async (link: string) => {
     try {
       await navigator.clipboard.writeText(link);
       console.log('リンクをコピーしました:', link);
-      // 必要に応じてトースト通知を表示
+
+      // コピー成功のトースト表示
+      enqueueSnackbar('リンクをコピーしました', {
+        variant: 'success',
+        autoHideDuration: 2000,
+        anchorOrigin: {
+          vertical: 'bottom',
+          horizontal: 'center',
+        },
+      });
+
     } catch (error) {
       console.error('コピーに失敗しました:', error);
+
+      // コピー失敗のトースト表示
+      enqueueSnackbar('コピーに失敗しました', {
+        variant: 'error',
+        autoHideDuration: 3000,
+        anchorOrigin: {
+          vertical: 'bottom',
+          horizontal: 'center',
+        },
+      });
     }
   };
 
@@ -156,8 +263,9 @@ export const Header = () => {
             <Button
               variant="contained"
               color="secondary"
-              startIcon={<SaveIcon />}
+              startIcon={saving ? null : <SaveIcon />}
               onClick={handleSaveClick}
+              disabled={saving}
               sx={{
                 minWidth: 100,
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -165,9 +273,13 @@ export const Header = () => {
                 '&:hover': {
                   backgroundColor: 'rgba(255, 255, 255, 0.3)',
                 },
+                '&:disabled': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                },
               }}
             >
-              保存
+              {saving ? '保存中...' : '保存'}
             </Button>
             <Button
               variant="contained"
@@ -184,6 +296,24 @@ export const Header = () => {
               }}
             >
               共有
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<DeleteIcon />}
+              onClick={handleDeleteClick}
+              sx={{
+                minWidth: 100,
+                backgroundColor: 'rgba(244, 67, 54, 0.8)',
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'rgba(244, 67, 54, 0.9)',
+                },
+                '&:active': {
+                  backgroundColor: 'rgba(244, 67, 54, 1)',
+                },
+              }}
+            >
+              削除
             </Button>
           </Box>
         </Toolbar>
@@ -310,6 +440,58 @@ export const Header = () => {
             />
           </Box>
         </DialogContent>
+      </Dialog>
+
+      {/* 削除確認ダイアログ */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            maxWidth: 400,
+          }
+        }}
+      >
+        <DialogTitle sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          color: 'error.main'
+        }}>
+          <WarningIcon color="error" />
+          ダイアグラムの削除
+        </DialogTitle>
+
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            「<strong>{diagram.name}</strong>」を削除しますか？
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            この操作は取り消すことができません。削除されたダイアグラムは復元できません。
+          </Typography>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button
+            onClick={handleCloseDeleteDialog}
+            variant="outlined"
+            disabled={deleting}
+          >
+            キャンセル
+          </Button>
+          <Button
+            onClick={handleDeleteDiagram}
+            variant="contained"
+            color="error"
+            disabled={deleting}
+            startIcon={deleting ? null : <DeleteIcon />}
+          >
+            {deleting ? '削除中...' : '削除する'}
+          </Button>
+        </DialogActions>
       </Dialog>
     </>
   );
