@@ -41,15 +41,7 @@ export const TopPage = () => {
             const newDiagram = createNewDiagram(projectName);
             setDiagram(newDiagram);
             const convertedData = convertTargetToSource(newDiagram);
-            // const baseURL = "http://localhost:3000";
-            const baseURL = client.baseURL;
-            await axios.post(baseURL + "/api_p1", convertedData)
-                .then(response => {
-                    console.log('ダイアグラム作成:', response.data);
-                })
-                .catch(error => {
-                    console.error('ダイアグラム作成エラー:', error);
-                });
+            client.postDiagram(convertedData); // 新しいダイアグラムを作成
             navigate(`/editor/${newDiagram.id}`);
         } catch (error) {
             console.error('Project creation failed:', error);

@@ -22,9 +22,7 @@ export const EditorPage = () => {
       setLoading(true);
       setError(null);
 
-      // const baseURL = "http://localhost:3000";
-      const baseURL = client.baseURL; // APIクライアントの使用
-      const response = await axios.get(`${baseURL}/api_p1/${diagramId}`);
+      const response = await client.getDiagram(diagramId);
 
       console.log('編集モードでダイアグラム読み込み成功:', response.data);
 

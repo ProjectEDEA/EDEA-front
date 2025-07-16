@@ -15,7 +15,6 @@ import {
   InputAdornment,
   Divider
 } from '@mui/material';
-import PolylineIcon from '@mui/icons-material/Polyline';
 import SaveIcon from '@mui/icons-material/Save';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import CloseIcon from '@mui/icons-material/Close';
@@ -47,10 +46,8 @@ export const Header = () => {
     try {
       setSaving(true);
       const convertedData = convertTargetToSource(diagram);
-      // const baseURL = "http://localhost:3000";
-      const baseURL = client.baseURL; // APIクライアントの使用
 
-      await axios.post(baseURL + "/api_p1", convertedData);
+      await client.postDiagram(convertedData); // APIクライアントの使用
       console.log('ダイアグラム保存成功');
 
       // 保存成功のトースト表示
@@ -104,10 +101,8 @@ export const Header = () => {
   const handleDeleteDiagram = async () => {
     try {
       setDeleting(true);
-      // const baseURL = "http://localhost:3000";
-      const baseURL = client.baseURL; // APIクライアントの使用
 
-      await axios.delete(`${baseURL}/api_p1/${diagram.id}`);
+      await client.deleteDiagram(diagram.id); // APIクライアントの使用
       console.log('ダイアグラム削除成功');
 
       // 削除成功のトースト表示
