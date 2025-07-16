@@ -27,6 +27,7 @@ import { convertTargetToSource } from '../../api/convertData';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import edeaLogo from '../../img/EDEA-logo.png';
+import { client } from '../../api/client';
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -46,7 +47,8 @@ export const Header = () => {
     try {
       setSaving(true);
       const convertedData = convertTargetToSource(diagram);
-      const baseURL = "http://localhost:3000";
+      // const baseURL = "http://localhost:3000";
+      const baseURL = client.baseURL; // APIクライアントの使用
 
       await axios.post(baseURL + "/api_p1", convertedData);
       console.log('ダイアグラム保存成功');
@@ -102,7 +104,8 @@ export const Header = () => {
   const handleDeleteDiagram = async () => {
     try {
       setDeleting(true);
-      const baseURL = "http://localhost:3000";
+      // const baseURL = "http://localhost:3000";
+      const baseURL = client.baseURL; // APIクライアントの使用
 
       await axios.delete(`${baseURL}/api_p1/${diagram.id}`);
       console.log('ダイアグラム削除成功');

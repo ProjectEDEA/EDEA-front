@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useDiagramStore } from '../store/diagramStore';
 import { convertSourceToTarget } from '../api/convertData';
+import { client } from '../api/client';
 
 const PreviewPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +21,8 @@ const PreviewPage = () => {
       setLoading(true);
       setError(null);
 
-      const baseURL = "http://localhost:3000";
+      // const baseURL = "http://localhost:3000";
+      const baseURL = client.baseURL; // APIクライアントの使用
       const response = await axios.get(`${baseURL}/api_p1/${diagramId}`);
 
       console.log('プレビューモードでダイアグラム読み込み成功:', response.data);

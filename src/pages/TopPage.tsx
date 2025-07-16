@@ -16,6 +16,7 @@ import { convertTargetToSource } from '../api/convertData';
 import { createNewDiagram, useDiagramStore } from '../store/diagramStore';
 import axios from 'axios';
 import edeaLogo from '../img/EDEA-logo.png';
+import { client } from '../api/client'; // APIクライアントのインポート
 
 export const TopPage = () => {
     const navigate = useNavigate();
@@ -40,7 +41,8 @@ export const TopPage = () => {
             const newDiagram = createNewDiagram(projectName);
             setDiagram(newDiagram);
             const convertedData = convertTargetToSource(newDiagram);
-            const baseURL = "http://localhost:3000";
+            // const baseURL = "http://localhost:3000";
+            const baseURL = client.baseURL;
             await axios.post(baseURL + "/api_p1", convertedData)
                 .then(response => {
                     console.log('ダイアグラム作成:', response.data);

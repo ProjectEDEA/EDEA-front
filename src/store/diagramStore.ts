@@ -12,6 +12,7 @@ import { getInverseRelation } from "../utils/diagramUtils";
 import { calculateCustomHierarchicalLayout, calculateLayout } from "../utils/layout";
 import { convertSourceToTarget } from "../api/convertData";
 import axios from "axios";
+import { client } from "../api/client";
 
 /**
  * プロジェクト名と現在日時からハッシュ化されたIDを生成
@@ -126,23 +127,24 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
     useDiagramStore.getState().updateAllClassPositions(diagram);
   },
 
-  loadDiagramById: async (id: string) => {
-    try {
-      const baseURL = "http://localhost:3000";
-      const response = await axios.get(`${baseURL}/api_p1/${id}`);
+  // loadDiagramById: async (id: string) => {
+  //   try {
+  //     // const baseURL = "http://localhost:3000";
+  //     const baseURL = client.baseURL; // APIクライアントの使用
+  //     const response = await axios.get(`${baseURL}/api_p1/${id}`);
 
-      const convertedData = convertSourceToTarget(response.data);
-      set(() => ({
-        diagram: convertedData,
-        selectedClassId: null,
-      }));
+  //     const convertedData = convertSourceToTarget(response.data);
+  //     set(() => ({
+  //       diagram: convertedData,
+  //       selectedClassId: null,
+  //     }));
 
-      return true;
-    } catch (error) {
-      console.error("Failed to load diagram:", error);
-      return false;
-    }
-  },
+  //     return true;
+  //   } catch (error) {
+  //     console.error("Failed to load diagram:", error);
+  //     return false;
+  //   }
+  // },
 
   // ダイアグラム名の更新
   updateDiagramName: (name: string) =>
