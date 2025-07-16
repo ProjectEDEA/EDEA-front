@@ -15,6 +15,7 @@ import { mockDiagram, mockServerResponseJSON } from '../mocks/diagramData';
 import { convertTargetToSource } from '../api/convertData';
 import { createNewDiagram, useDiagramStore } from '../store/diagramStore';
 import axios from 'axios';
+import edeaLogo from '../img/EDEA-logo.png';
 
 export const TopPage = () => {
     const navigate = useNavigate();
@@ -68,20 +69,36 @@ export const TopPage = () => {
             }}
         >
             <Container maxWidth="sm" sx={{ textAlign: 'center' }}>
-                {/* EDEAタイトル */}
-                <Typography
-                    variant="h1"
-                    component="h1"
-                    sx={{
-                        mb: 6,
-                        fontWeight: 300,
-                        color: '#666',
-                        letterSpacing: '0.5rem',
-                        fontFamily: 'Arial, sans-serif'
-                    }}
-                >
-                    EDEA
-                </Typography>
+                {/* EDEAタイトルBox */}
+                <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center', // 中央寄せを追加
+                    mb: 6
+                }}>
+                    <img
+                        src={edeaLogo}
+                        alt="EDEA Logo"
+                        style={{
+                            width: 100,
+                            height: 100,
+                            objectFit: 'contain' // 画像の縦横比を保持
+                        }}
+                    />
+                    <Typography
+                        variant="h1"
+                        component="h1"
+                        sx={{
+                            // mb: 6,
+                            fontWeight: 300,
+                            color: '#666',
+                            letterSpacing: '0.4rem',
+                            fontFamily: 'Arial, sans-serif'
+                        }}
+                    >
+                        EDEA
+                    </Typography>
+                </Box>
 
                 {/* 作成ボタン */}
                 <Button

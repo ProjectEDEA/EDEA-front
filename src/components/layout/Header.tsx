@@ -26,6 +26,7 @@ import { useDiagramStore } from '../../store/diagramStore';
 import { convertTargetToSource } from '../../api/convertData';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
+import edeaLogo from '../../img/EDEA-logo.png';
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -194,7 +195,16 @@ export const Header = () => {
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
           {/* 左側のロゴとタイトル */}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <PolylineIcon sx={{ mr: 1 }} />
+            {/* <PolylineIcon sx={{ mr: 1 }} /> */}
+            <img
+              src={edeaLogo}
+              alt="EDEA Logo"
+              style={{
+                width: 32,
+                height: 32,
+                objectFit: 'contain' // 画像の縦横比を保持
+              }}
+            />
             <Typography
               variant="h6"
               noWrap
@@ -206,6 +216,7 @@ export const Header = () => {
                 letterSpacing: '.3rem',
                 color: 'inherit',
                 textDecoration: 'none',
+                paddingLeft: 1,
               }}
             >
               EDEA
