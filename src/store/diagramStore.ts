@@ -11,6 +11,7 @@ import { mockDiagram, mockServerResponseJSON } from "../mocks/diagramData";
 import { getInverseRelation } from "../utils/diagramUtils";
 import { calculateLayout } from "../utils/layout";
 import { convertSourceToTarget } from "../api/convertData";
+import axios from "axios";
 
 /**
  * プロジェクト名と現在日時からハッシュ化されたIDを生成
@@ -18,18 +19,18 @@ import { convertSourceToTarget } from "../api/convertData";
 export const generateProjectId = (projectName: string): string => {
   const timestamp = new Date().toISOString();
   const source = `${projectName}_${timestamp}`;
-  
+
   // シンプルなハッシュ関数（実際のプロダクションではより強力なライブラリを使用）
   let hash = 0;
   for (let i = 0; i < source.length; i++) {
     const char = source.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // 32bit整数に変換
   }
-  
+
   // 負の値を正の値に変換し、16進数の文字列として返す
   const hashString = Math.abs(hash).toString(16);
-  
+
   // プレフィックスを付けて識別しやすくする
   return `proj_${hashString}_${Date.now().toString(36)}`;
 };
@@ -37,10 +38,13 @@ export const generateProjectId = (projectName: string): string => {
 /**
  * 新しい空のダイアグラムデータを作成
  */
-export const createNewDiagram = (projectName: string, projectId?: string): DiagramData => {
+export const createNewDiagram = (
+  projectName: string,
+  projectId?: string
+): DiagramData => {
   const id = projectId || generateProjectId(projectName);
   const now = Math.floor(Date.now() / 1000);
-  
+
   return {
     id: id,
     name: projectName,
@@ -105,8 +109,8 @@ interface DiagramActions {
 // ストアの作成
 export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
   // 初期状態
-  // diagram: mockDiagram, // まずはモックデータを初期値とする
-  diagram: convertSourceToTarget(mockServerResponseJSON), // APIからのデータ変換を行う
+  diagram: mockDiagram, // まずはモックデータを初期値とする
+  // diagram: convertSourceToTarget(mockServerResponseJSON), // APIからのデータ変換を行う
   selectedClassId: null,
 
   // 新しく追加：ダイアグラム全体をセット
@@ -116,14 +120,32 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
       selectedClassId: null, // 新しいダイアグラムロード時は選択をクリア
     })),
 
+  loadDiagramById: async (id: string) => {
+    try {
+      const baseURL = "http://localhost:3000";
+      const response = await axios.get(`${baseURL}/api_p1/${id}`);
+
+      const convertedData = convertSourceToTarget(response.data);
+      set(() => ({
+        diagram: convertedData,
+        selectedClassId: null,
+      }));
+
+      return true;
+    } catch (error) {
+      console.error("Failed to load diagram:", error);
+      return false;
+    }
+  },
+
   // ダイアグラム名の更新
   updateDiagramName: (name: string) =>
-  set((state) => ({
-    diagram: {
-      ...state.diagram,
-      name: name,
-    },
-  })),
+    set((state) => ({
+      diagram: {
+        ...state.diagram,
+        name: name,
+      },
+    })),
 
   // アクションの実装
   selectClass: (classId) => set({ selectedClassId: classId }),

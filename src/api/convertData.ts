@@ -244,7 +244,7 @@ export function convertTargetToSource(targetData: DiagramData): SourceDiagram {
 
   return {
     file_id: { id: targetData.id },
-    name: "Vehicle Management System", // Name is lost in conversion, so we restore a default
+    name: targetData.name, // Name is lost in conversion, so we restore a default
     classes: sourceClasses,
     created_at: now, // Timestamps are lost, so generate new ones
     last_modified: now,
@@ -494,15 +494,3 @@ const sourceData: SourceDiagram = {
     },
   ],
 };
-
-// // 2. Perform the conversion to the target format
-// const targetData = convertSourceToTarget(mockServerResponseJSON);
-
-// console.log("--- Converted to Target Format ---");
-// console.log(JSON.stringify(targetData, null, 2));
-
-// 3. Perform the conversion back to the source format
-// const roundTripData = convertTargetToSource(mockDiagram);
-
-// console.log("\n--- Converted Back to Source Format (Round-trip) ---");
-// console.log(JSON.stringify(roundTripData, null, 2));

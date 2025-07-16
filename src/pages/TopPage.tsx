@@ -11,9 +11,10 @@ import {
     DialogTitle,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { mockServerResponseJSON } from '../mocks/diagramData';
-import { convertSourceToTarget } from '../api/convertData';
+import { mockDiagram, mockServerResponseJSON } from '../mocks/diagramData';
+import { convertTargetToSource } from '../api/convertData';
 import { createNewDiagram, useDiagramStore } from '../store/diagramStore';
+import axios from 'axios';
 
 export const TopPage = () => {
     const navigate = useNavigate();
@@ -36,8 +37,16 @@ export const TopPage = () => {
     const handleCreateProject = async () => {
         try {
             const newDiagram = createNewDiagram(projectName);
-
             setDiagram(newDiagram);
+            const convertedData = convertTargetToSource(newDiagram);
+            const baseURL = "http://localhost:3000";
+            await axios.post(baseURL + "/api_p1", convertedData)
+                .then(response => {
+                    console.log('ダイアグラム作成:', response.data);
+                })
+                .catch(error => {
+                    console.error('ダイアグラム作成エラー:', error);
+                });
             navigate(`/editor/${newDiagram.id}`);
         } catch (error) {
             console.error('Project creation failed:', error);

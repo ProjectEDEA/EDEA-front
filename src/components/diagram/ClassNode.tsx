@@ -6,7 +6,7 @@ import {
   List,
   ListItemText,
 } from '@mui/material';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position } from '@xyflow/react';
 import type { ClassData, Visibility } from '../../types/uml';
 
 // 可視性を記号に変換するヘルパー関数
@@ -36,7 +36,7 @@ interface ClassNodeProps {
   data: ClassData;
 }
 
-export const ClassNode = ({ data }: ClassNodeProps) => {
+export const ClassNode = ({ data: { classData: data } }: { data: { classData: ClassData } }) => {
   return (
     <>
       {/* 接続ハンドル (上下左右に設定可能) */}

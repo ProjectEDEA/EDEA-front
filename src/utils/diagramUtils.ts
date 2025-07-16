@@ -78,15 +78,15 @@ export const getEdgeLabel = (relation: RelationInfo): string => {
   let label = getRelationTypeLabel(relation.relation);
   
   // 多重度を追加
-  if (relation.multiplicity_p || relation.multiplicity_c) {
-    label += '\n';
-    if (relation.multiplicity_p) {
-      label += `${relation.multiplicity_p.lower}..${relation.multiplicity_p.upper || '*'} `;
-    }
-    if (relation.multiplicity_c) {
-      label += `${relation.multiplicity_c.lower}..${relation.multiplicity_c.upper || '*'}`;
-    }
-  }
+  // if (relation.multiplicity_p || relation.multiplicity_c) {
+  //   label += '\n';
+  //   if (relation.multiplicity_p) {
+  //     label += `${relation.multiplicity_p.lower}..${relation.multiplicity_p.upper || '*'} `;
+  //   }
+  //   if (relation.multiplicity_c) {
+  //     label += `${relation.multiplicity_c.lower}..${relation.multiplicity_c.upper || '*'}`;
+  //   }
+  // }
   
   return label;
 };

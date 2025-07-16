@@ -1,19 +1,35 @@
 import { useCallback, useRef } from 'react';
 import ReactFlow, { Background, Controls, Node, ReactFlowInstance } from 'reactflow';
+// import {
+//   ReactFlow,
+//   Background,
+//   Controls,
+//   Node,
+//   ReactFlowInstance,
+//   ReactFlowProvider,
+// } from '@xyflow/react';
+import { ReactFlowProvider } from '@xyflow/react';
 import { Fab, SpeedDial, SpeedDialAction } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import 'reactflow/dist/style.css';
+// import 'reactflow/dist/style.css';
+import '@xyflow/react/dist/style.css';
 import { useDiagramStore } from '../../store/diagramStore';
 import { ClassNode } from './ClassNode';
 import type { ClassData, RelationType } from '../../types/uml';
 import { getEdgeLabel, getMarkerEndForRelation, getMarkerStartForRelation } from '../../utils/diagramUtils';
 import { DiamondMarker } from './DiamondMarker';
 import { calculateLayout, calculateHierarchicalLayout, calculateCustomHierarchicalLayout } from '../../utils/layout';
+import CustomEdge from './CustomEdge';
+import CustomEdgeStartEnd from './CustomEdgeStartEnd';
 
 const nodeTypes = {
   classNode: ClassNode,
+};
+
+const edgeTypes = {
+  custom: CustomEdge,
+  'start-end': CustomEdgeStartEnd,
 };
 
 // 関係の種類に応じたエッジスタイル
@@ -42,8 +58,9 @@ export const DiagramView = () => {
     id: classData.id,
     type: 'classNode',
     position: classData.position,
-    data: classData,
-    draggable: true,
+    data: {
+      classData,
+    }
   }));
 
   const edges = diagram.classes.flatMap(
@@ -57,11 +74,11 @@ export const DiagramView = () => {
         style: getEdgeStyleForRelation(rel.relation),
         markerEnd: getMarkerEndForRelation(rel.relation),
         markerStart: getMarkerStartForRelation(rel.relation),
-        data: rel
+        // data: rel
       })) ?? []
   );
 
-  const handleNodeClick = useCallback((event: React.MouseEvent, node: Node<ClassData>) => {
+  const handleNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
     selectClass(node.id);
   }, [selectClass]);
 
@@ -81,14 +98,14 @@ export const DiagramView = () => {
 
   const applyCustomHierarchicalLayout = useCallback(() => {
     const newPositions = calculateCustomHierarchicalLayout(diagram.classes);
-    
+
     const updatedClasses = diagram.classes.map(cls => ({
       ...cls,
       position: newPositions.get(cls.id) || cls.position
     }));
-    
+
     updateAllClassPositions(updatedClasses);
-    
+
     // レイアウト更新後に少し遅延してfitViewを実行
     setTimeout(() => {
       if (reactFlowInstance.current) {
@@ -108,49 +125,52 @@ export const DiagramView = () => {
   }, []);
 
   return (
-    <div style={{ height: '100%', border: '1px solid #ddd', position: 'relative' }}>
-      <DiamondMarker />
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        onNodeClick={handleNodeClick}
-        onInit={onInit} // ReactFlowインスタンスを取得
-        fitView
-        fitViewOptions={{
-          padding: 0.1,
-          minZoom: 0.1,
-          maxZoom: 1.5
-        }}
-      >
-        <Background />
-        <Controls />
-      </ReactFlow>
+    <ReactFlowProvider>
+      <div style={{ height: '100%', border: '1px solid #ddd', position: 'relative' }}>
+        <DiamondMarker />
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          // edgeTypes={edgeTypes}
+          onNodeClick={handleNodeClick}
+          onInit={onInit} // ReactFlowインスタンスを取得
+          fitView
+          fitViewOptions={{
+            padding: 0.1,
+            minZoom: 0.1,
+            maxZoom: 1.5
+          }}
+        >
+          <Background />
+          <Controls />
+        </ReactFlow>
 
-      {/* ★ 自動レイアウト実行ボタン */}
-      <Fab
-        color="secondary"
-        aria-label="auto layout"
-        onClick={applyCustomHierarchicalLayout}
-        sx={{ position: 'absolute', bottom: 16, right: 88, zIndex: 1000 }}
-      >
-        <AutoFixHighIcon />
-      </Fab>
+        {/* ★ 自動レイアウト実行ボタン */}
+        <Fab
+          color="secondary"
+          aria-label="auto layout"
+          onClick={applyCustomHierarchicalLayout}
+          sx={{ position: 'absolute', bottom: 16, right: 88, zIndex: 1000 }}
+        >
+          <AutoFixHighIcon />
+        </Fab>
 
-      {/* 新規クラス追加ボタン */}
-      <Fab
-        color="primary"
-        aria-label="add class"
-        onClick={handleAddClass}
-        sx={{
-          position: 'absolute',
-          bottom: 16,
-          right: 16,
-          zIndex: 1000
-        }}
-      >
-        <AddIcon />
-      </Fab>
-    </div>
+        {/* 新規クラス追加ボタン */}
+        <Fab
+          color="primary"
+          aria-label="add class"
+          onClick={handleAddClass}
+          sx={{
+            position: 'absolute',
+            bottom: 16,
+            right: 16,
+            zIndex: 1000
+          }}
+        >
+          <AddIcon />
+        </Fab>
+      </div>
+    </ReactFlowProvider>
   );
 };

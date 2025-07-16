@@ -19,6 +19,8 @@ import IosShareIcon from '@mui/icons-material/IosShare';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useDiagramStore } from '../../store/diagramStore';
+import { convertTargetToSource } from '../../api/convertData';
+import axios from 'axios';
 
 export const Header = () => {
   const { diagram, updateDiagramName } = useDiagramStore();
@@ -26,6 +28,23 @@ export const Header = () => {
 
   const handleNameChange = (value: string) => {
     updateDiagramName(value);
+  };
+
+  // 保存ボタン
+  const handleSaveClick = async () => {
+    try {
+      const convertedData = convertTargetToSource(diagram);
+      const baseURL = "http://localhost:3000";
+      await axios.post(baseURL + "/api_p1", convertedData)
+        .then(response => {
+          console.log('ダイアグラム保存:', response.data);
+        })
+        .catch(error => {
+          console.error('ダイアグラム保存エラー:', error);
+        });
+    } catch (error) {
+      console.error('ダイアグラムの保存に失敗:', error);
+    }
   };
 
   // 共有ダイアログを開く
@@ -138,6 +157,7 @@ export const Header = () => {
               variant="contained"
               color="secondary"
               startIcon={<SaveIcon />}
+              onClick={handleSaveClick}
               sx={{
                 minWidth: 100,
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',

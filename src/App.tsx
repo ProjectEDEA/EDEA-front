@@ -10,7 +10,9 @@ function App() {
         <Box component="main" sx={{ flexGrow: 1, overflow: 'auto' }}>
           <Routes>
             <Route path="/" element={<TopPage />} />
-            <Route path="/editor/:diagramId" element={<EditorPage />} />
+            <Route path="/editor/:id" element={<EditorPage />} />
+            {/* 存在しないルートは TopPage にリダイレクト */}
+            <Route path="*" element={<TopPage />} />
           </Routes>
         </Box>
       </Box>
