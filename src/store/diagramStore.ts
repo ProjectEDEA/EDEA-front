@@ -58,10 +58,12 @@ export const createNewDiagram = (
 interface DiagramState {
   diagram: DiagramData;
   selectedClassId: string | null;
+  isEditorMode: boolean; // エディタモードのフラグ
 }
 
 // ストアが提供するアクション（操作）の型定義
 interface DiagramActions {
+  setEditorMode: (isEditor: boolean) => void;
   setDiagram: (diagram: DiagramData) => void;
   updateDiagramName: (name: string) => void;
   selectClass: (classId: string | null) => void;
@@ -112,6 +114,9 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
   diagram: mockDiagram, // まずはモックデータを初期値とする
   // diagram: convertSourceToTarget(mockServerResponseJSON), // APIからのデータ変換を行う
   selectedClassId: null,
+  isEditorMode: true, // エディタモードを初期値としてtrueに設定
+
+  setEditorMode: (isEditor: boolean) => set({ isEditorMode: isEditor }),
 
   // 新しく追加：ダイアグラム全体をセット
   setDiagram: (diagram: DiagramData) =>

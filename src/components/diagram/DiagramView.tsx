@@ -51,7 +51,7 @@ const getEdgeStyleForRelation = (relationType: RelationType) => {
 };
 
 export const DiagramView = () => {
-  const { diagram, selectClass, addClass, applyAutoLayout, updateAllClassPositions } = useDiagramStore();
+  const { diagram, selectClass, isEditorMode, addClass, applyAutoLayout, updateAllClassPositions } = useDiagramStore();
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
 
   const nodes = diagram.classes.map((classData) => ({
@@ -146,30 +146,35 @@ export const DiagramView = () => {
           <Controls />
         </ReactFlow>
 
-        {/* ★ 自動レイアウト実行ボタン */}
-        <Fab
-          color="secondary"
-          aria-label="auto layout"
-          onClick={applyCustomHierarchicalLayout}
-          sx={{ position: 'absolute', bottom: 16, right: 88, zIndex: 1000 }}
-        >
-          <AutoFixHighIcon />
-        </Fab>
+        {/* 編集モードのときのみボタンを表示 */}
+      {isEditorMode && (
+        <>
+          {/* ★ 自動レイアウト実行ボタン */}
+          <Fab
+            color="secondary"
+            aria-label="auto layout"
+            onClick={applyCustomHierarchicalLayout}
+            sx={{ position: 'absolute', bottom: 16, right: 88, zIndex: 1000 }}
+          >
+            <AutoFixHighIcon />
+          </Fab>
 
-        {/* 新規クラス追加ボタン */}
-        <Fab
-          color="primary"
-          aria-label="add class"
-          onClick={handleAddClass}
-          sx={{
-            position: 'absolute',
-            bottom: 16,
-            right: 16,
-            zIndex: 1000
-          }}
-        >
-          <AddIcon />
-        </Fab>
+          {/* 新規クラス追加ボタン */}
+          <Fab
+            color="primary"
+            aria-label="add class"
+            onClick={handleAddClass}
+            sx={{
+              position: 'absolute',
+              bottom: 16,
+              right: 16,
+              zIndex: 1000
+            }}
+          >
+            <AddIcon />
+          </Fab>
+        </>
+      )}
       </div>
     </ReactFlowProvider>
   );

@@ -1,6 +1,5 @@
-import { Box, CircularProgress, Grid, Typography } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import { DiagramView } from '../components/diagram/DiagramView';
-import { EditorPanel } from '../components/diagram/EditorPanel';
 import { Header } from '../components/layout/Header';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -8,7 +7,7 @@ import axios from 'axios';
 import { useDiagramStore } from '../store/diagramStore';
 import { convertSourceToTarget } from '../api/convertData';
 
-export const EditorPage = () => {
+const PreviewPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { setDiagram, diagram, setEditorMode } = useDiagramStore();
@@ -24,7 +23,7 @@ export const EditorPage = () => {
       const baseURL = "http://localhost:3000";
       const response = await axios.get(`${baseURL}/api_p1/${diagramId}`);
 
-      console.log('編集モードでダイアグラム読み込み成功:', response.data);
+      console.log('プレビューモードでダイアグラム読み込み成功:', response.data);
 
       // サーバーからのデータを内部形式に変換
       const convertedData = convertSourceToTarget(response.data);
@@ -47,10 +46,10 @@ export const EditorPage = () => {
     }
   };
 
-  // コンポーネントマウント時に編集モードに設定
+  // コンポーネントマウント時にプレビューモードに設定
   useEffect(() => {
-    console.log('EditorPage: 編集モードに設定');
-    setEditorMode(true);
+    console.log('PreviewPage: プレビューモードに設定');
+    setEditorMode(false);
   }, [setEditorMode]);
 
   // URLパラメータのIDが変更されたときにダイアグラムを読み込む
@@ -111,23 +110,15 @@ export const EditorPage = () => {
     );
   }
 
-  // 編集モード時の表示
+  // プレビューモード時の表示（フルスクリーン）
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
-      <Grid container spacing={2} sx={{ height: '100%' }}>
-        {/* 左側: UML図ビューア */}
-        <Grid size={{xs:7,md:7}}>
-          <DiagramView />
-        </Grid>
-
-        {/* 右側: 編集パネル */}
-        <Grid size={{xs:6,md:5}}>
-          <EditorPanel />
-        </Grid>
-      </Grid>
+      <Box sx={{ flex: 1 }}>
+        <DiagramView />
+      </Box>
     </Box>
   );
-};
+}
 
-export default EditorPage;
+export default PreviewPage;

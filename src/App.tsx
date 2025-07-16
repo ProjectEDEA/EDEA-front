@@ -3,6 +3,7 @@ import { Box } from '@mui/material';
 import { EditorPage } from './pages/EditorPage';
 import { TopPage } from './pages/TopPage';
 import { SnackbarProvider } from 'notistack';
+import PreviewPage from './pages/PreviewPage';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Routes>
               <Route path="/" element={<TopPage />} />
               <Route path="/editor/:id" element={<EditorPage />} />
+              <Route path="/preview/:id" element={<PreviewPage />} />
               {/* 存在しないルートは TopPage にリダイレクト */}
               <Route path="*" element={<TopPage />} />
             </Routes>

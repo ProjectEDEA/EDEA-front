@@ -29,7 +29,7 @@ import { useSnackbar } from 'notistack';
 
 export const Header = () => {
   const navigate = useNavigate();
-  const { diagram, updateDiagramName } = useDiagramStore();
+  const { diagram, isEditorMode, updateDiagramName } = useDiagramStore();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -181,7 +181,7 @@ export const Header = () => {
     const diagramId = diagram.id;
 
     const editLink = `${baseUrl}/editor/${diagramId}`;
-    const shareLink = `${baseUrl}/view/${diagramId}`; // 閲覧専用リンク
+    const shareLink = `${baseUrl}/preview/${diagramId}`; // 閲覧専用リンク
 
     return { editLink, shareLink };
   };
@@ -214,73 +214,109 @@ export const Header = () => {
 
           {/* 右側のボタン */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <TextField
-              onChange={(e) => handleNameChange(e.target.value)}
-              value={diagram.name}
-              label="ダイアグラム名"
-              size="small"
-              variant="outlined"
-              placeholder="ダイアグラム名を入力"
-              sx={{
-                width: 300,
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                  color: 'white',
-                  '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.4)',
-                    borderWidth: 1,
+            {/* ダイアグラム名表示・編集 */}
+            {isEditorMode ? (
+              // 編集モード: TextField（編集可能）
+              <TextField
+                onChange={(e) => handleNameChange(e.target.value)}
+                value={diagram.name}
+                label="ダイアグラム名"
+                size="small"
+                variant="outlined"
+                placeholder="ダイアグラム名を入力"
+                sx={{
+                  width: 300,
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    color: 'white',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.4)',
+                      borderWidth: 1,
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.6)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.9)',
+                      borderWidth: 2,
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: 'white',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      '&::placeholder': {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        opacity: 1,
+                      },
+                    },
                   },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.6)',
+                  '& .MuiInputLabel-root': {
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '0.875rem',
+                    '&.Mui-focused': {
+                      color: 'rgba(255, 255, 255, 0.95)',
+                    },
                   },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.9)',
-                    borderWidth: 2,
+                  '& .MuiInputLabel-shrink': {
+                    backgroundColor: 'transparent',
+                    px: 0.5,
                   },
-                  '& .MuiOutlinedInput-input': {
+                }}
+              />
+            ) : (
+              // プレビューモード: Typography（読み取り専用）
+              <Box
+                sx={{
+                  width: 300,
+                  px: 2,
+                  py: 1.5,
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  borderRadius: 1,
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  minHeight: '40px', // TextFieldと同じ高さ
+                }}
+              >
+                <Typography
+                  variant="body1"
+                  sx={{
                     color: 'white',
                     fontSize: '0.875rem',
                     fontWeight: 500,
-                    '&::placeholder': {
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      opacity: 1,
-                    },
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    width: '100%',
+                  }}
+                >
+                  {diagram.name || 'ダイアグラム名なし'}
+                </Typography>
+              </Box>
+            )}
+            {isEditorMode && (
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={saving ? null : <SaveIcon />}
+                onClick={handleSaveClick}
+                disabled={saving}
+                sx={{
+                  minWidth: 100,
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
                   },
-                },
-                '& .MuiInputLabel-root': {
-                  color: 'rgba(255, 255, 255, 0.8)',
-                  fontSize: '0.875rem',
-                  '&.Mui-focused': {
-                    color: 'rgba(255, 255, 255, 0.95)',
+                  '&:disabled': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    color: 'rgba(255, 255, 255, 0.5)',
                   },
-                },
-                '& .MuiInputLabel-shrink': {
-                  backgroundColor: 'transparent',
-                  px: 0.5,
-                },
-              }}
-            />
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={saving ? null : <SaveIcon />}
-              onClick={handleSaveClick}
-              disabled={saving}
-              sx={{
-                minWidth: 100,
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                },
-                '&:disabled': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                },
-              }}
-            >
-              {saving ? '保存中...' : '保存'}
-            </Button>
+                }}
+              >
+                {saving ? '保存中...' : '保存'}
+              </Button>
+            )}
             <Button
               variant="contained"
               color="secondary"
@@ -297,24 +333,26 @@ export const Header = () => {
             >
               共有
             </Button>
-            <Button
-              variant="contained"
-              startIcon={<DeleteIcon />}
-              onClick={handleDeleteClick}
-              sx={{
-                minWidth: 100,
-                backgroundColor: 'rgba(244, 67, 54, 0.8)',
-                color: 'white',
-                '&:hover': {
-                  backgroundColor: 'rgba(244, 67, 54, 0.9)',
-                },
-                '&:active': {
-                  backgroundColor: 'rgba(244, 67, 54, 1)',
-                },
-              }}
-            >
-              削除
-            </Button>
+            {isEditorMode && (
+              <Button
+                variant="contained"
+                startIcon={<DeleteIcon />}
+                onClick={handleDeleteClick}
+                sx={{
+                  minWidth: 100,
+                  backgroundColor: 'rgba(244, 67, 54, 0.8)',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'rgba(244, 67, 54, 0.9)',
+                  },
+                  '&:active': {
+                    backgroundColor: 'rgba(244, 67, 54, 1)',
+                  },
+                }}
+              >
+                削除
+              </Button>
+            )}
           </Box>
         </Toolbar>
       </AppBar>
@@ -349,51 +387,54 @@ export const Header = () => {
 
         <DialogContent sx={{ pt: 0, pb: 3 }}>
           {/* 編集リンク */}
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
-              編集リンク
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              編集可能なURLリンクです。
-            </Typography>
-            <TextField
-              fullWidth
-              value={editLink}
-              variant="outlined"
-              size="small"
-              InputProps={{
-                readOnly: true,
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => handleCopyLink(editLink)}
-                      size="small"
-                      sx={{ color: 'primary.main' }}
-                    >
-                      <ContentCopyIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: '#f5f5f5',
-                  '& fieldset': {
-                    borderColor: '#e0e0e0',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#c0c0c0',
-                  },
-                },
-                '& .MuiOutlinedInput-input': {
-                  fontSize: '0.875rem',
-                  color: '#666',
-                },
-              }}
-            />
-          </Box>
-
-          <Divider sx={{ my: 2 }} />
+          {isEditorMode && (
+            <>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                  編集リンク
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  編集可能なURLリンクです。
+                </Typography>
+                <TextField
+                  fullWidth
+                  value={editLink}
+                  variant="outlined"
+                  size="small"
+                  InputProps={{
+                    readOnly: true,
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => handleCopyLink(editLink)}
+                          size="small"
+                          sx={{ color: 'primary.main' }}
+                        >
+                          <ContentCopyIcon fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: '#f5f5f5',
+                      '& fieldset': {
+                        borderColor: '#e0e0e0',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#c0c0c0',
+                      },
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      fontSize: '0.875rem',
+                      color: '#666',
+                    },
+                  }}
+                />
+              </Box>
+              <Divider sx={{ my: 2 }} />
+            </>
+          )}
 
           {/* 共有リンク */}
           <Box>
