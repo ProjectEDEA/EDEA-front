@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import ReactFlow, { Background, Controls, Node, ReactFlowInstance } from 'reactflow';
 // import {
 //   ReactFlow,
@@ -97,14 +97,7 @@ export const DiagramView = () => {
   }, [addClass, selectClass]);
 
   const applyCustomHierarchicalLayout = useCallback(() => {
-    const newPositions = calculateCustomHierarchicalLayout(diagram.classes);
-
-    const updatedClasses = diagram.classes.map(cls => ({
-      ...cls,
-      position: newPositions.get(cls.id) || cls.position
-    }));
-
-    updateAllClassPositions(updatedClasses);
+    updateAllClassPositions(diagram);
 
     // レイアウト更新後に少し遅延してfitViewを実行
     setTimeout(() => {
@@ -123,6 +116,20 @@ export const DiagramView = () => {
   const onInit = useCallback((instance: ReactFlowInstance) => {
     reactFlowInstance.current = instance;
   }, []);
+
+  useEffect(() => {
+    // 編集モードかつクラスが存在する場合のみ実行
+    if (isEditorMode && diagram.classes.length > 0) {
+      console.log('ダイアグラムが更新されました。自動レイアウトを実行します。');
+      
+      // ReactFlowが初期化されるまで待機
+      const timer = setTimeout(() => {
+        applyCustomHierarchicalLayout();
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [diagram.classes.length, diagram.classes, isEditorMode, applyCustomHierarchicalLayout]);
 
   return (
     <ReactFlowProvider>

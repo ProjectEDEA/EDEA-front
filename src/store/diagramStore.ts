@@ -9,7 +9,7 @@ import type {
 } from "../types/uml";
 import { mockDiagram, mockServerResponseJSON } from "../mocks/diagramData";
 import { getInverseRelation } from "../utils/diagramUtils";
-import { calculateLayout } from "../utils/layout";
+import { calculateCustomHierarchicalLayout, calculateLayout } from "../utils/layout";
 import { convertSourceToTarget } from "../api/convertData";
 import axios from "axios";
 
@@ -71,8 +71,7 @@ interface DiagramActions {
   deleteClass: (classId: string) => void;
   applyAutoLayout: () => void;
   updateClassName: (classId: string, newName: string) => void;
-  updateAllClassPositions: (classes: ClassData[]) => void;
-  // TODO: 今後ここに属性やメソッドを追加/編集するアクションを追加していく
+  updateAllClassPositions: (diagram: DiagramData) => void;
   addAttribute: (classId: string) => void;
   updateAttribute: (
     classId: string,
@@ -114,16 +113,18 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
   diagram: mockDiagram, // まずはモックデータを初期値とする
   // diagram: convertSourceToTarget(mockServerResponseJSON), // APIからのデータ変換を行う
   selectedClassId: null,
-  isEditorMode: true, // エディタモードを初期値としてtrueに設定
+  isEditorMode: true,
 
   setEditorMode: (isEditor: boolean) => set({ isEditorMode: isEditor }),
 
   // 新しく追加：ダイアグラム全体をセット
-  setDiagram: (diagram: DiagramData) =>
+  setDiagram: (diagram: DiagramData) => {
     set(() => ({
       diagram: diagram,
-      selectedClassId: null, // 新しいダイアグラムロード時は選択をクリア
-    })),
+      selectedClassId: null,
+    }))
+    useDiagramStore.getState().updateAllClassPositions(diagram);
+  },
 
   loadDiagramById: async (id: string) => {
     try {
@@ -207,15 +208,22 @@ export const useDiagramStore = create<DiagramState & DiagramActions>((set) => ({
       };
     }),
 
-  updateAllClassPositions: (classes: ClassData[]) =>
+  updateAllClassPositions: (diagram: DiagramData) => {
+    const newPositions = calculateCustomHierarchicalLayout(diagram.classes);
+    const updatedClasses = diagram.classes.map((cls) => ({
+      ...cls,
+      position: newPositions.get(cls.id) || cls.position,
+    }));
+
     set((state) => {
       const newDiagram = {
         ...state.diagram,
-        classes: classes,
+        classes: updatedClasses,
       };
 
       return { diagram: newDiagram };
-    }),
+    });
+  },
 
   updateClassName: (classId, newName) =>
     set((state) => ({
