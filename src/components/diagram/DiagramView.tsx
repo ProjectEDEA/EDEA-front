@@ -9,7 +9,7 @@ import ReactFlow, { Background, Controls, Node, ReactFlowInstance } from 'reactf
 //   ReactFlowProvider,
 // } from '@xyflow/react';
 import { ReactFlowProvider } from '@xyflow/react';
-import { Fab, SpeedDial, SpeedDialAction } from '@mui/material';
+import { Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 // import 'reactflow/dist/style.css';
@@ -19,18 +19,15 @@ import { ClassNode } from './ClassNode';
 import type { ClassData, RelationType } from '../../types/uml';
 import { getEdgeLabel, getMarkerEndForRelation, getMarkerStartForRelation } from '../../utils/diagramUtils';
 import { DiamondMarker } from './DiamondMarker';
-import { calculateLayout, calculateHierarchicalLayout, calculateCustomHierarchicalLayout } from '../../utils/layout';
-import CustomEdge from './CustomEdge';
-import CustomEdgeStartEnd from './CustomEdgeStartEnd';
 
 const nodeTypes = {
   classNode: ClassNode,
 };
 
-const edgeTypes = {
-  custom: CustomEdge,
-  'start-end': CustomEdgeStartEnd,
-};
+// const edgeTypes = {
+//   custom: CustomEdge,
+//   'start-end': CustomEdgeStartEnd,
+// };
 
 // 関係の種類に応じたエッジスタイル
 const getEdgeStyleForRelation = (relationType: RelationType) => {
@@ -51,7 +48,7 @@ const getEdgeStyleForRelation = (relationType: RelationType) => {
 };
 
 export const DiagramView = () => {
-  const { diagram, selectClass, isEditorMode, addClass, applyAutoLayout, updateAllClassPositions } = useDiagramStore();
+  const { diagram, selectClass, isEditorMode, addClass, updateAllClassPositions } = useDiagramStore();
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
 
   const nodes = diagram.classes.map((classData) => ({

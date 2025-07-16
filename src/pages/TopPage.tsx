@@ -1,4 +1,4 @@
-import { use, useState } from 'react';
+import { useState } from 'react';
 import {
     Box,
     Typography,
@@ -11,10 +11,8 @@ import {
     DialogTitle,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { mockDiagram, mockServerResponseJSON } from '../mocks/diagramData';
 import { convertTargetToSource } from '../api/convertData';
 import { createNewDiagram, useDiagramStore } from '../store/diagramStore';
-import axios from 'axios';
 import edeaLogo from '../img/EDEA-logo.png';
 import { client } from '../api/client'; // APIクライアントのインポート
 

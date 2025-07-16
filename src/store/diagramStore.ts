@@ -7,12 +7,9 @@ import type {
   RelationInfo,
   RelationType,
 } from "../types/uml";
-import { mockDiagram, mockServerResponseJSON } from "../mocks/diagramData";
+import { mockDiagram } from "../mocks/diagramData";
 import { getInverseRelation } from "../utils/diagramUtils";
 import { calculateCustomHierarchicalLayout, calculateLayout } from "../utils/layout";
-import { convertSourceToTarget } from "../api/convertData";
-import axios from "axios";
-import { client } from "../api/client";
 
 /**
  * プロジェクト名と現在日時からハッシュ化されたIDを生成
@@ -44,7 +41,7 @@ export const createNewDiagram = (
   projectId?: string
 ): DiagramData => {
   const id = projectId || generateProjectId(projectName);
-  const now = Math.floor(Date.now() / 1000);
+  // const now = Math.floor(Date.now() / 1000);
 
   return {
     id: id,

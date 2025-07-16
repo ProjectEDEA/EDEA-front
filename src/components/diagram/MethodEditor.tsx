@@ -1,4 +1,4 @@
-import { Box, Button, Fab, List } from '@mui/material';
+import { Box, Button, List } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useDiagramStore } from '../../store/diagramStore';
 import type { ClassData } from '../../types/uml';

@@ -2,8 +2,8 @@ import axios from 'axios';
 
 export const client = {
     // APIのエンドポイントを定義
-    // baseURL: 'http://edea.igameta.com',
-    baseURL: 'http://localhost:3000',
+    baseURL: 'https://edea-server.onrender.com',
+    // baseURL: 'http://localhost:3000',
 
     // ダイアグラム新規作成・保存
     postDiagram: async (data: any) => {

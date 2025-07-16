@@ -223,7 +223,7 @@ export const calculateCustomHierarchicalLayout = (classes: ClassData[]) => {
   const nodeSpacing = NODE_WIDTH + 80; // ノード間の距離
   
   levels.forEach((levelClasses, levelIndex) => {
-    const totalWidth = levelClasses.length * nodeSpacing;
+    // const totalWidth = levelClasses.length * nodeSpacing;
     const startX = 100; // 固定の開始位置
     
     levelClasses.forEach((classId, nodeIndex) => {

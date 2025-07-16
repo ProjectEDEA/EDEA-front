@@ -32,9 +32,9 @@ const formatParameters = (parameters: any[]): string => {
 };
 
 // ノードの型定義 (props.dataでClassDataを受け取る)
-interface ClassNodeProps {
-  data: ClassData;
-}
+// interface ClassNodeProps {
+//   data: ClassData;
+// }
 
 export const ClassNode = ({ data: { classData: data } }: { data: { classData: ClassData } }) => {
   return (

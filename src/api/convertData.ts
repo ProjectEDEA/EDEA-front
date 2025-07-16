@@ -7,12 +7,12 @@ import {
   ClassData,
   Visibility,
   RelationType,
-  Multiplicity,
+  // Multiplicity,
   Variable,
   Method,
   RelationInfo,
 } from "../types/uml";
-import { mockDiagram, mockServerResponseJSON } from "../mocks/diagramData";
+// import { mockDiagram, mockServerResponseJSON } from "../mocks/diagramData";
 
 // =================================================================
 // SOURCE DATA STRUCTURE (Inferred from the provided JSON)
@@ -256,7 +256,7 @@ export function convertTargetToSource(targetData: DiagramData): SourceDiagram {
 // =================================================================
 
 // 1. Define the source data from the prompt
-const sourceData: SourceDiagram = {
+export const sourceData: SourceDiagram = {
   last_modified: 1752497946,
   created_at: 1752497946,
   file_id: { id: "vehicle_diagram_001" },

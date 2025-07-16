@@ -23,7 +23,6 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useDiagramStore } from '../../store/diagramStore';
 import { convertTargetToSource } from '../../api/convertData';
-import axios from 'axios';
 import { useSnackbar } from 'notistack';
 import edeaLogo from '../../img/EDEA-logo.png';
 import { client } from '../../api/client';
